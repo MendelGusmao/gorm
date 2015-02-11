@@ -2,6 +2,7 @@ package gorm
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -24,7 +25,21 @@ func Create(scope *Scope) {
 	if !scope.HasError() {
 		// set create sql
 		var sqls, columns []string
+
+		fieldNames := make([]string, len(scope.Fields()))
+		fields := scope.Fields()
+		index := 0
+
 		for _, field := range scope.Fields() {
+			fieldNames[index] = field.DBName
+			index++
+		}
+
+		sort.Strings(fieldNames)
+
+		for _, fieldName := range fieldNames {
+			field := fields[fieldName]
+
 			if field.IsNormal && (!field.IsPrimaryKey || !scope.PrimaryKeyZero()) {
 				if field.DefaultValue != nil && field.IsBlank {
 					continue

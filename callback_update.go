@@ -2,6 +2,7 @@ package gorm
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -47,7 +48,20 @@ func Update(scope *Scope) {
 				sqls = append(sqls, fmt.Sprintf("%v = %v", scope.Quote(key), scope.AddToVars(value)))
 			}
 		} else {
+			fieldNames := make([]string, len(scope.Fields()))
+			fields := scope.Fields()
+			index := 0
+
 			for _, field := range scope.Fields() {
+				fieldNames[index] = field.DBName
+				index++
+			}
+
+			sort.Strings(fieldNames)
+
+			for _, fieldName := range fieldNames {
+				field := fields[fieldName]
+
 				if !field.IsPrimaryKey && field.IsNormal && !field.IsIgnored {
 					if field.DefaultValue != nil && field.IsBlank {
 						continue
